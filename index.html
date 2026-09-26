@@ -89,53 +89,57 @@
     </main>
   </div>
 
-  <!-- Configure the Python environment and load your exact files -->
+<!-- Added "numpy" to the packages list -->
   <py-config>
-    packages = ["pandas", "scikit-learn"]
+    packages = ["pandas", "scikit-learn", "numpy"]
     [[fetch]]
     files = ["./spam_ham_dataset.csv", "./spam.py"]
   </py-config>
 
-  <!-- The script that hijacks the input command and connects your code to the UI -->
   <script type="py">
 import builtins
 import re
+import traceback
 import numpy as np
 from pyscript import document
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-# 1. HACK THE INPUT FUNCTION
-# This forces your infinite 'while True' loop to safely crash the moment it asks for terminal input, 
-# preventing the browser from freezing without requiring you to change your actual python file.
-class StopLoop(Exception): pass
-
-def mock_input(prompt=""):
-    raise StopLoop()
-
-builtins.input = mock_input
-
-# 2. RUN YOUR UNTOUCHED SCRIPT
-# This runs your exact file, trains the model, and then hits the mocked input() and stops.
 try:
-    import spam
-except StopLoop:
-    pass
+    # 1. HACK THE INPUT FUNCTION
+    class StopLoop(Exception): pass
+    def mock_input(prompt=""):
+        raise StopLoop()
+    builtins.input = mock_input
 
-# 3. CALCULATE METRICS FOR THE HTML UI
-acc = accuracy_score(spam.y_test, spam.y_pred) * 100
-prec = precision_score(spam.y_test, spam.y_pred) * 100
-rec = recall_score(spam.y_test, spam.y_pred) * 100
-f1 = f1_score(spam.y_test, spam.y_pred) * 100
+    # 2. RUN YOUR UNTOUCHED SCRIPT
+    try:
+        import spam
+    except StopLoop:
+        pass # The script ran perfectly up to the input() prompt
 
-document.getElementById("metric-acc").innerText = f"{acc:.1f}%"
-document.getElementById("metric-prec").innerText = f"{prec:.1f}%"
-document.getElementById("metric-rec").innerText = f"{rec:.1f}%"
-document.getElementById("metric-f1").innerText = f"{f1:.1f}%"
+    # 3. CALCULATE METRICS FOR THE HTML UI
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+    
+    acc = accuracy_score(spam.y_test, spam.y_pred) * 100
+    prec = precision_score(spam.y_test, spam.y_pred) * 100
+    rec = recall_score(spam.y_test, spam.y_pred) * 100
+    f1 = f1_score(spam.y_test, spam.y_pred) * 100
 
-# 4. ENABLE THE BUTTON NOW THAT YOUR MODEL IS TRAINED
-btn = document.getElementById("scan-btn")
-btn.innerText = "Check for spam →"
-btn.disabled = False
+    document.getElementById("metric-acc").innerText = f"{acc:.1f}%"
+    document.getElementById("metric-prec").innerText = f"{prec:.1f}%"
+    document.getElementById("metric-rec").innerText = f"{rec:.1f}%"
+    document.getElementById("metric-f1").innerText = f"{f1:.1f}%"
+
+    # 4. ENABLE THE BUTTON NOW THAT YOUR MODEL IS TRAINED
+    btn = document.getElementById("scan-btn")
+    btn.innerText = "Check for spam →"
+    btn.disabled = False
+
+except Exception as e:
+    # IF ANYTHING FAILS, TURN THE BUTTON RED AND SHOW THE ERROR
+    btn = document.getElementById("scan-btn")
+    btn.innerText = f"❌ Error: {str(e)}"
+    btn.style.backgroundColor = "#aa392e"
+    print(traceback.format_exc())
 
 # 5. THE SCAN FUNCTION (Attached to the HTML button)
 def scan_email(event):
@@ -143,7 +147,6 @@ def scan_email(event):
     if not email_text.strip():
         return
         
-    # Use the variables straight out of your untouched spam.py file
     input_tfidf = spam.vectorizer.transform([email_text])
     score = spam.model.predict_proba(input_tfidf)[0][1] * 100
     
@@ -155,7 +158,6 @@ def scan_email(event):
             if spam.spam_log_probs[word_idx] > spam.ham_log_probs[word_idx]:
                 trigger_words.append(word)
                 
-    # Update the HTML visuals based on the score
     res_box = document.getElementById("result-box")
     res_box.style.display = "block"
     
