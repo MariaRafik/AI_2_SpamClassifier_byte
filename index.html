@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Phishing Simulator Terminal</title>
+    
+    <!-- Load the PyScript engine -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    
+    <style>
+        body { background-color: #121212; color: white; font-family: sans-serif; padding: 20px; }
+        h2 { color: #00ffcc; }
+        p { color: #aaaaaa; }
+    </style>
+</head>
+<body>
+    <h2>AVIP Task 2: Phishing Simulator</h2>
+    <p>Initializing AI model... (This takes a few seconds to load the libraries and dataset)</p>
+
+    <!-- Configure the Python environment and load your exact files -->
+    <py-config>
+        packages = ["pandas", "scikit-learn"]
+        [[fetch]]
+        files = ["spam_ham_dataset.csv", "spam.py"]
+    </py-config>
+
+    <!-- Execute your untouched Python script inside a built-in web terminal -->
+    <script type="py" src="./spam.py" terminal></script>
+</body>
+</html>
