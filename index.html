@@ -103,6 +103,9 @@ import traceback
 import numpy as np
 from pyscript import document
 
+# Create an empty dictionary to hold all the variables from your untouched spam.py file
+spam_vars = {}
+
 try:
     # 1. HACK THE INPUT FUNCTION
     class StopLoop(Exception): pass
@@ -110,19 +113,27 @@ try:
         raise StopLoop()
     builtins.input = mock_input
 
-    # 2. RUN YOUR UNTOUCHED SCRIPT
+    # 2. RUN YOUR UNTOUCHED SCRIPT MANUALLY
+    # This reads your file as text and executes it, saving all variables into 'spam_vars'
+    with open("spam.py", "r", encoding="utf-8") as f:
+        code = f.read()
+
     try:
-        import spam
+        exec(code, spam_vars)
     except StopLoop:
-        pass # The script ran perfectly up to the input() prompt
+        pass # The script ran perfectly up to the input() prompt and saved all variables
 
     # 3. CALCULATE METRICS FOR THE HTML UI
     from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
     
-    acc = accuracy_score(spam.y_test, spam.y_pred) * 100
-    prec = precision_score(spam.y_test, spam.y_pred) * 100
-    rec = recall_score(spam.y_test, spam.y_pred) * 100
-    f1 = f1_score(spam.y_test, spam.y_pred) * 100
+    # Extract variables from our dictionary
+    y_test = spam_vars['y_test']
+    y_pred = spam_vars['y_pred']
+    
+    acc = accuracy_score(y_test, y_pred) * 100
+    prec = precision_score(y_test, y_pred) * 100
+    rec = recall_score(y_test, y_pred) * 100
+    f1 = f1_score(y_test, y_pred) * 100
 
     document.getElementById("metric-acc").innerText = f"{acc:.1f}%"
     document.getElementById("metric-prec").innerText = f"{prec:.1f}%"
@@ -133,6 +144,7 @@ try:
     btn = document.getElementById("scan-btn")
     btn.innerText = "Check for spam →"
     btn.disabled = False
+    btn.style.backgroundColor = "#164e39"
 
 except Exception as e:
     # IF ANYTHING FAILS, TURN THE BUTTON RED AND SHOW THE ERROR
@@ -147,15 +159,22 @@ def scan_email(event):
     if not email_text.strip():
         return
         
-    input_tfidf = spam.vectorizer.transform([email_text])
-    score = spam.model.predict_proba(input_tfidf)[0][1] * 100
+    # Extract the necessary variables from our dictionary
+    vectorizer = spam_vars['vectorizer']
+    model = spam_vars['model']
+    feature_names = spam_vars['feature_names']
+    spam_log_probs = spam_vars['spam_log_probs']
+    ham_log_probs = spam_vars['ham_log_probs']
+        
+    input_tfidf = vectorizer.transform([email_text])
+    score = model.predict_proba(input_tfidf)[0][1] * 100
     
     trigger_words = []
     clean_input = re.sub(r'[^\w\s]', '', email_text.lower()).split()
     for word in clean_input:
-        if word in spam.feature_names:
-            word_idx = np.where(spam.feature_names == word)[0][0]
-            if spam.spam_log_probs[word_idx] > spam.ham_log_probs[word_idx]:
+        if word in feature_names:
+            word_idx = np.where(feature_names == word)[0][0]
+            if spam_log_probs[word_idx] > ham_log_probs[word_idx]:
                 trigger_words.append(word)
                 
     res_box = document.getElementById("result-box")
@@ -175,5 +194,3 @@ def scan_email(event):
         status_strong.innerText = "Likely not spam"
         triggers_p.style.display = "none"
   </script>
-</body>
-</html>
