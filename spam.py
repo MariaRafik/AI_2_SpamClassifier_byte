@@ -49,7 +49,7 @@ while True:
 
     print(f"Spam Probability Score: {spam_score:.2f}%")
 
-    if spam_score>50.0:
+    if spam_score>=35.0:
         print(f"Status: WARNING! Phising attempt detected")
         print(f"TRIGGER KEYWORDS: {', '.join(set(trigger_words))}")
 
