@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Phishing Simulator Terminal</title>
     
-    <!-- Load the PyScript engine -->
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
     
@@ -17,16 +16,15 @@
 </head>
 <body>
     <h2>AVIP Task 2: Phishing Simulator</h2>
-    <p>Initializing AI model... (This takes a few seconds to load the libraries and dataset)</p>
+    <p>Loading AI model and dataset... (This takes a few seconds)</p>
 
-    <!-- Configure the Python environment and load your exact files -->
     <py-config>
         packages = ["pandas", "scikit-learn"]
         [[fetch]]
-        files = ["spam_ham_dataset.csv", "spam.py"]
+        files = ["./spam_ham_dataset.csv", "./spam.py"]
     </py-config>
 
-    <!-- Execute your untouched Python script inside a built-in web terminal -->
-    <script type="py" src="./spam.py" terminal></script>
+    <!-- THE FIX: Added the 'worker' attribute here so the input() command doesn't freeze the browser -->
+    <script type="py" src="./spam.py" terminal worker></script>
 </body>
 </html>
