@@ -1,30 +1,177 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Phishing Simulator Terminal</title>
-    
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
-    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-    
-    <style>
-        body { background-color: #121212; color: white; font-family: sans-serif; padding: 20px; }
-        h2 { color: #00ffcc; }
-        p { color: #aaaaaa; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inbox Check — Spam Classifier Demo</title>
+  
+  <!-- Load the PyScript engine to run Python in the browser -->
+  <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+  <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+  
+  <style>
+    /* Your exact professional CSS design */
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f5f7f5; color: #172923; }
+    .shell { max-width: 1100px; margin: 0 auto; padding: 28px 24px 80px; }
+    header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #dce4dd; padding-bottom: 24px; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 16px; font-weight: 750; letter-spacing: -.04em; }
+    .mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: #124d39; color: white; font-size: 20px; }
+    .badge { border: 1px solid #d4e2d7; border-radius: 30px; padding: 7px 12px; color: #456354; font-size: 12px; font-weight: 650; background: #ecf3ed; }
+    main { padding-top: 74px; }
+    .eyebrow { font-size: 12px; color: #39805a; letter-spacing: .14em; font-weight: 800; text-transform: uppercase; }
+    h1 { max-width: 750px; font-size: clamp(40px, 6vw, 70px); letter-spacing: -.065em; line-height: 1.07; margin: 17px 0 18px; }
+    .intro { color: #5e6c64; max-width: 570px; font-size: 17px; line-height: 1.65; margin: 0 0 42px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(260px, 1fr); gap: 22px; align-items: start; }
+    .card { background: white; border: 1px solid #e1e8e2; border-radius: 18px; box-shadow: 0 14px 40px #213a2810; padding: 28px; }
+    .card h2 { font-size: 18px; letter-spacing: -.03em; margin: 0 0 8px; }
+    .hint { margin: 0 0 22px; color: #708077; font-size: 14px; line-height: 1.5; }
+    label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+    textarea { display: block; resize: vertical; width: 100%; min-height: 230px; border: 1px solid #cdd9d1; background: #fbfcfb; border-radius: 11px; padding: 17px; font: inherit; font-size: 14px; line-height: 1.6; color: #172923; }
+    textarea:focus { outline: 3px solid #c8e9d5; border-color: #348359; }
+    textarea::placeholder { color: #95a39a; }
+    button { margin-top: 18px; background: #164e39; color: white; border: 0; border-radius: 10px; padding: 14px 21px; font: inherit; font-weight: 700; cursor: pointer; width: 100%; }
+    button:disabled { background: #95a39a; cursor: not-allowed; }
+    button:hover:not(:disabled) { background: #226648; }
+    button:focus-visible { outline: 3px solid #8ace9d; outline-offset: 3px; }
+    .result { margin-top: 22px; padding: 20px; border-radius: 12px; background: #eaf5ee; border: 1px solid #c8e6d2; display: none; }
+    .result.warning { background: #fff4e9; border-color: #f3d7b5; }
+    .result .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+    .result strong { font-size: 17px; }
+    .score { font-size: 27px; font-weight: 800; letter-spacing: -.05em; }
+    .result p { margin: 10px 0 0; color: #4e6256; font-size: 14px; line-height: 1.5; }
+    .metric { border-top: 1px solid #edf0ec; padding: 15px 0; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #64746a; }
+    .metric strong { color: #174e37; font-size: 17px; }
+    .small { color: #86938a; font-size: 12px; line-height: 1.55; margin: 17px 0 0; }
+    @media (max-width: 760px) { main { padding-top: 48px; } .grid { grid-template-columns: 1fr; } .card { padding: 22px; } .intro { margin-bottom: 30px; } }
+  </style>
 </head>
 <body>
-    <h2>AVIP Task 2: Phishing Simulator</h2>
-    <p>Loading AI model and dataset... (This takes a few seconds)</p>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true">✳</span> Inbox Check</div>
+      <span class="badge">LIVE MODEL DEMO</span>
+    </header>
+    <main>
+      <div class="eyebrow">Email intelligence / 01</div>
+      <h1>A second look at your inbox.</h1>
+      <p class="intro">Paste an email below to see how a trained spam classifier scores it. Results are generated from the included email dataset, right here in the demo.</p>
+      <div class="grid">
+        <section class="card">
+          <h2>Analyze an email</h2>
+          <p class="hint">Enter the subject and body, or any email text you want to check.</p>
+          <label for="email">Email text</label>
+          <textarea id="email" placeholder="Subject: A message for you&#10;&#10;Paste your email here..."></textarea>
+          
+          <!-- This button is disabled until PyScript finishes running your spam.py file in the background -->
+          <button id="scan-btn" py-click="scan_email" disabled>⚙️ Downloading AI & Training Model... (approx 15s)</button>
+          
+          <div id="result-box" class="result">
+            <div class="top"><strong id="status-text"></strong><span class="score" id="score-val"></span></div>
+            <p>Estimated spam probability based on the model's training data.</p>
+            <p id="triggers-text"></p>
+          </div>
+        </section>
+        
+        <aside class="card">
+          <h2>Behind the result</h2>
+          <p class="hint">TF-IDF text features + Multinomial Naive Bayes. Evaluated on a held-out 20% of the included dataset.</p>
+          
+          <!-- These metrics will be automatically populated from your spam.py results -->
+          <div class="metric"><span>Accuracy</span><strong id="metric-acc">--%</strong></div>
+          <div class="metric"><span>Precision</span><strong id="metric-prec">--%</strong></div>
+          <div class="metric"><span>Recall</span><strong id="metric-rec">--%</strong></div>
+          <div class="metric"><span>F1 score</span><strong id="metric-f1">--%</strong></div>
+          <p class="small">Demo only. A statistical score is not a security guarantee.</p>
+        </aside>
+      </div>
+    </main>
+  </div>
 
-    <py-config>
-        packages = ["pandas", "scikit-learn"]
-        [[fetch]]
-        files = ["./spam_ham_dataset.csv", "./spam.py"]
-    </py-config>
+  <!-- Configure the Python environment and load your exact files -->
+  <py-config>
+    packages = ["pandas", "scikit-learn"]
+    [[fetch]]
+    files = ["./spam_ham_dataset.csv", "./spam.py"]
+  </py-config>
 
-    <!-- THE FIX: Added the 'worker' attribute here so the input() command doesn't freeze the browser -->
-    <script type="py" src="./spam.py" terminal worker></script>
+  <!-- The script that hijacks the input command and connects your code to the UI -->
+  <script type="py">
+import builtins
+import re
+import numpy as np
+from pyscript import document
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# 1. HACK THE INPUT FUNCTION
+# This forces your infinite 'while True' loop to safely crash the moment it asks for terminal input, 
+# preventing the browser from freezing without requiring you to change your actual python file.
+class StopLoop(Exception): pass
+
+def mock_input(prompt=""):
+    raise StopLoop()
+
+builtins.input = mock_input
+
+# 2. RUN YOUR UNTOUCHED SCRIPT
+# This runs your exact file, trains the model, and then hits the mocked input() and stops.
+try:
+    import spam
+except StopLoop:
+    pass
+
+# 3. CALCULATE METRICS FOR THE HTML UI
+acc = accuracy_score(spam.y_test, spam.y_pred) * 100
+prec = precision_score(spam.y_test, spam.y_pred) * 100
+rec = recall_score(spam.y_test, spam.y_pred) * 100
+f1 = f1_score(spam.y_test, spam.y_pred) * 100
+
+document.getElementById("metric-acc").innerText = f"{acc:.1f}%"
+document.getElementById("metric-prec").innerText = f"{prec:.1f}%"
+document.getElementById("metric-rec").innerText = f"{rec:.1f}%"
+document.getElementById("metric-f1").innerText = f"{f1:.1f}%"
+
+# 4. ENABLE THE BUTTON NOW THAT YOUR MODEL IS TRAINED
+btn = document.getElementById("scan-btn")
+btn.innerText = "Check for spam →"
+btn.disabled = False
+
+# 5. THE SCAN FUNCTION (Attached to the HTML button)
+def scan_email(event):
+    email_text = document.getElementById("email").value
+    if not email_text.strip():
+        return
+        
+    # Use the variables straight out of your untouched spam.py file
+    input_tfidf = spam.vectorizer.transform([email_text])
+    score = spam.model.predict_proba(input_tfidf)[0][1] * 100
+    
+    trigger_words = []
+    clean_input = re.sub(r'[^\w\s]', '', email_text.lower()).split()
+    for word in clean_input:
+        if word in spam.feature_names:
+            word_idx = np.where(spam.feature_names == word)[0][0]
+            if spam.spam_log_probs[word_idx] > spam.ham_log_probs[word_idx]:
+                trigger_words.append(word)
+                
+    # Update the HTML visuals based on the score
+    res_box = document.getElementById("result-box")
+    res_box.style.display = "block"
+    
+    document.getElementById("score-val").innerText = f"{score:.1f}%"
+    status_strong = document.getElementById("status-text")
+    triggers_p = document.getElementById("triggers-text")
+    
+    if score > 50.0:
+        res_box.className = "result warning"
+        status_strong.innerText = "Possible spam"
+        triggers_p.innerHTML = f"<strong>Words associated with spam:</strong> {', '.join(set(trigger_words))}"
+        triggers_p.style.display = "block"
+    else:
+        res_box.className = "result"
+        status_strong.innerText = "Likely not spam"
+        triggers_p.style.display = "none"
+  </script>
 </body>
 </html>
