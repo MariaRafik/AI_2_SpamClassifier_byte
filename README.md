@@ -15,10 +15,10 @@ This project features a Natural Language Processing (NLP) machine learning model
 
 ## Model Performance & Evaluation Metrics
 The classifier was evaluated on the 20% test data split, achieving strong results across all major NLP classification metrics:
-* **Accuracy:** *[Check your terminal for this exact number, e.g., 97.5%]*
-* **Precision:** *[Check your terminal, e.g., 96.0%]* (Low false positive rate)
-* **Recall:** *[Check your terminal, e.g., 93.0%]* (High detection rate for actual spam)
-* **F1-Score:** *[Check your terminal, e.g., 94.5%]*
+* **Accuracy:** 92.3671%
+* **Precision:** 99.5370% (Low false positive rate)
+* **Recall:** 73.3788% (High detection rate for actual spam)
+* **F1-Score:** 84.4794%
 
 ### Confusion Matrix
 ![Spam Classifier Confusion Matrix](confusion_matrix.png)
@@ -27,18 +27,15 @@ The confusion matrix visually demonstrates the model's high true negative (corre
 ## Example Predictions
 Below are 10 sample inputs tested against the model, showing the predicted label and the model's confidence score.
 
-| Input Text | Predicted Label | Confidence Score |
+| Input Text | Predicted Label | Scam Score |
 |------------|-----------------|------------------|
-| "Hey, are we still on for the study group tomorrow at 4?" | Safe (Ham) | 98.2% |
-| "URGENT! You have won a $1,000 Walmart gift card. Click here to claim now!" | **SPAM** | 99.1% |
-| "Please find attached the draft for the upcoming design presentation." | Safe (Ham) | 96.5% |
-| "CONGRATULATIONS! Your mobile number was selected for a free iPhone 15." | **SPAM** | 98.8% |
-| "Can you pick up some coffee on your way to campus?" | Safe (Ham) | 99.5% |
-| "Account Alert: Your banking password has expired. Update via this link immediately." | **SPAM** | 97.4% |
-| "Don't forget to submit the database assignment before midnight." | Safe (Ham) | 98.0% |
-| "Limited time offer! Get 80% off all designer sunglasses. Buy now!" | **SPAM** | 95.7% |
-| "Thanks for helping me debug that C++ code yesterday, it works perfectly now." | Safe (Ham) | 99.0% |
-| "Final Notice: You have an unpaid toll invoice. Pay $5.99 at [link] to avoid a $50 fine." | **SPAM** | 94.2% |
+| "Hey, are we still on for the study group tomorrow at 4?" | Safe (Ham) | 10.20% |
+| "URGENT! You have won a $1,000 Walmart gift card. Click here to claim now!" | **SPAM** | 39.58% |
+| "Please find attached the draft for the upcoming design presentation." | Safe (Ham) | 6.15% |
+| "CONGRATULATIONS! Your mobile number was selected for a free iPhone 15." | **SPAM** | 41.30% |
+| "Can you pick up some coffee on your way to campus?" | Safe (Ham) | 27.64% |
+| "Limited time offer! Get 80% off all designer sunglasses. Buy now!" | **SPAM** | 57.67% |
+| "Thanks for helping me debug that C++ code yesterday, it works perfectly now." | Safe (Ham) | 21.27% |
 
 ## Artifacts & Deliverables Included
 * `spam.py`: The core NLP training and interactive terminal simulator script.
