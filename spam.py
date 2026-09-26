@@ -5,6 +5,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB      #for text analysis
 from sklearn.metrics import accuracy_score, precision_score , recall_score, f1_score
 import re      #clean punctuation
+import pickle
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay
 
 df=pd.read_csv('spam_ham_dataset.csv')
 
@@ -53,3 +56,10 @@ while True:
     else:
         print('Status: Clean, No major threats detected')
 
+with open('spam_model.pkl', 'wb') as f:
+    pickle.dump(model, f)
+with open('vectorizer.pkl', 'wb') as f:
+    pickle.dump(vecto, f)
+disp = ConfusionMatrixDisplay.from_estimator(model, X_test_tfidf, y_test, cmap='Blues')
+plt.title("Spam Classifier Confusion Matrix")
+plt.savefig('confusion_matrix.png', bbox_inches='tight')
